@@ -2,12 +2,12 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     {
-      "path": "/api/cron/fetch-model-detail-snapshots",
-      "schedule": "0 * * * *"
+      "path": "/api/cron/fetch-model-snapshots",
+      "schedule": "0 2,6,10 * * *"
     },
     {
-      "path": "/api/cron/fetch-latest-score",
-      "schedule": "*/30 * * * *"
+      "path": "/api/cron/send-feishu-message",
+      "schedule": "0 1 * * *"
     }
   ]
 }

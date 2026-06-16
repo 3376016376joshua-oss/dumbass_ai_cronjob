@@ -20,6 +20,12 @@ function repoPath(...segments: string[]) {
   return path.join(process.cwd(), ...segments);
 }
 
+function assertLocalWritesAllowed() {
+  if (process.env.VERCEL === '1') {
+    throw new Error('BLOB_READ_WRITE_TOKEN is required for snapshot cron writes on Vercel.');
+  }
+}
+
 async function blobText(pathname: string) {
   const result = await get(pathname, {
     access: 'public',
@@ -68,6 +74,8 @@ export async function writeModelSnapshot(modelId: string | number, snapshot: unk
     return { backend: 'blob' as const, path: pathname };
   }
 
+  assertLocalWritesAllowed();
+
   const file = repoPath('data', MODEL_SNAPSHOT_PREFIX, filename);
   await mkdir(path.dirname(file), { recursive: true });
   await writeFile(file, body, 'utf8');
@@ -92,6 +100,8 @@ export async function appendLatestScoreSnapshots(records: unknown[]) {
     await putBlobText(LATEST_SCORE_PATH, `${previous}${lines}`, 'application/x-ndjson');
     return { backend: 'blob' as const, path: LATEST_SCORE_PATH };
   }
+
+  assertLocalWritesAllowed();
 
   const file = repoPath('data', LATEST_SCORE_PATH);
   await mkdir(path.dirname(file), { recursive: true });

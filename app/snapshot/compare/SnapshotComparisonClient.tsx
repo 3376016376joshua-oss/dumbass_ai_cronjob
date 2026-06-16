@@ -154,6 +154,8 @@ const calculateSeries = (snapshots: any[], period: HistoricalPeriod): ModelSerie
     const first = scores[0] ?? null;
     const last = scores[scores.length - 1] ?? null;
 
+    const hasStatsRuns = typeof stats.totalRuns === 'number' && stats.totalRuns > 0;
+
     return {
       id: String(snapshot?.modelId ?? `model-${index}`),
       name: formatModelName(snapshot),
@@ -165,9 +167,9 @@ const calculateSeries = (snapshots: any[], period: HistoricalPeriod): ModelSerie
       minimum: scores.length ? Math.min(...scores) : null,
       maximum: scores.length ? Math.max(...scores) : null,
       delta: typeof first === 'number' && typeof last === 'number' ? last - first : null,
-      totalRuns: typeof stats.totalRuns === 'number' ? stats.totalRuns : null,
-      successRate: typeof stats.successRate === 'number' ? stats.successRate : null,
-      averageLatency: typeof stats.averageLatency === 'number' ? stats.averageLatency : null,
+      totalRuns: hasStatsRuns ? stats.totalRuns : points.length,
+      successRate: hasStatsRuns && typeof stats.successRate === 'number' ? stats.successRate : null,
+      averageLatency: hasStatsRuns && typeof stats.averageLatency === 'number' ? stats.averageLatency : null,
     };
   }).filter((series) => series.points.length > 0)
 );

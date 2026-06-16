@@ -5,10 +5,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "fetch:model-snapshots": "tsx scripts/fetch-model-snapshots.ts",
+    "send:feishu-message": "tsx scripts/send-feishu-message.ts",
     "fetch:latest-score": "tsx scripts/fetch-latest-score.ts",
     "fetch:model-detail-snapshot": "tsx scripts/fetch-model-detail-snapshot.ts",
     "capture:model-snapshot": "node scripts/capture-model-snapshot.mjs",
-    "capture:opus-comparison": "node scripts/capture-model-snapshot.mjs --compare"
+    "capture:opus-comparison": "node scripts/capture-model-snapshot.mjs --compare",
+    "capture:coding-comparison": "node scripts/capture-model-snapshot.mjs --compare"
   },
   "dependencies": {
     "@auth/core": "^0.40.0",

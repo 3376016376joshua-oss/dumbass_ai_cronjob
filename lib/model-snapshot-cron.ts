@@ -233,3 +233,23 @@ export async function fetchModelDetailSnapshots(options: {
     models,
   };
 }
+
+export async function fetchModelSnapshots(options: {
+  modelIds?: number[];
+  baseUrl?: string;
+} = {}) {
+  const modelIds = options.modelIds ?? resolveCronModelIds();
+  const baseUrl = options.baseUrl ?? process.env.AISTUPIDLEVEL_BASE_URL;
+
+  const detail = await fetchModelDetailSnapshots({ modelIds, baseUrl });
+  const latestScore = await fetchLatestScoreSnapshots({ modelIds, baseUrl });
+
+  return {
+    ok: true,
+    fetchedAt: new Date().toISOString(),
+    modelIds,
+    storageBackend: getSnapshotStorageBackend(),
+    detail,
+    latestScore,
+  };
+}

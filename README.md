@@ -165,6 +165,41 @@ The frontend integrates with multiple backend services:
 - `/api/auth/*` - NextAuth.js endpoints
 - `/api/subscription/*` - Stripe subscription management
 
+## ⏱️ Vercel Cron Jobs
+
+The project includes Vercel Cron routes for keeping model snapshots warm and testing scheduled Feishu delivery:
+
+- `/api/cron/fetch-model-snapshots` - refreshes `model-detail-snapshots/model-*.json` and appends the latest score snapshots in one run
+- `/api/cron/send-feishu-message` - sends the configured scheduled Feishu text message
+
+The schedule is defined in `vercel.json`. Vercel runs cron schedules in UTC and only against production deployments. The model snapshot cron expression is `0 2,6,10 * * *`, which runs at 10:00, 14:00, and 18:00 in Asia/Shanghai. The Feishu message cron expression is `0 1 * * *`, which runs at 09:00 in Asia/Shanghai.
+
+Required production setup:
+
+```env
+CRON_SECRET=your-random-secret
+BLOB_READ_WRITE_TOKEN=your-vercel-blob-token
+FEISHU_APP_ID=cli_xxx
+FEISHU_APP_SECRET=your-feishu-app-secret
+FEISHU_MESSAGE_RECEIVE_ID_TYPE=chat_id
+FEISHU_MESSAGE_RECEIVE_ID=oc_xxx
+FEISHU_SCHEDULED_MESSAGE_TEXT=Scheduled message from AI Stupid Meter
+FEISHU_SCHEDULED_MESSAGE_ENABLED=1
+```
+
+When deployed on Vercel with `BLOB_READ_WRITE_TOKEN`, cron output is stored in Vercel Blob. Local development still writes to `data/` so the snapshot pages can be tested without cloud storage. By default the cron tracks `256,220,250,268` (`GPT-5.5`, `Claude Opus 4.6`, `Claude Opus 4.7`, and `Claude Opus 4.8`).
+
+Useful local checks:
+
+```bash
+npm run fetch:model-snapshots
+npm run capture:coding-comparison -- --period 7d
+npm run send:feishu-message -- --dry-run --receive-id oc_xxx --text "Scheduled message test"
+curl "http://localhost:3000/api/cron/send-feishu-message?dryRun=1&receiveId=oc_xxx&text=Scheduled%20message%20test"
+```
+
+To send a real Feishu message, set `FEISHU_SCHEDULED_MESSAGE_ENABLED=1`, provide the app credentials, and make sure the Feishu app bot has been added to the target chat. The cron route uses `CRON_SECRET` in production and sends with the app bot's tenant access token.
+
 ## 📱 Mobile Optimization
 
 - **Responsive design** that works on all screen sizes
