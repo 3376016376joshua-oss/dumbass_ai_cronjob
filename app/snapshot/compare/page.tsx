@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: 'Model Comparison Snapshot | AI Stupid Meter',
 };
 
-const DEFAULT_MODEL_IDS = ['220', '250', '268'];
+const DEFAULT_MODEL_IDS = ['256', '220', '250', '268'];
 const PERIODS = new Set(['latest', '24h', '7d', '1m']);
 
 interface SnapshotComparePageProps {
