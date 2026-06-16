@@ -41,7 +41,12 @@ interface ModelSeries {
   averageLatency: number | null;
 }
 
-const COLORS = ['#00ff41', '#00bfff', '#ff9f1c', '#ff4d8d'];
+const COLORS: Record<string, string> = {
+  '256': '#00ff41',
+  '220': '#00bfff',
+  '250': '#ff9f1c',
+  '268': '#ff4d8d',
+};
 
 const PERIOD_LABELS: Record<HistoricalPeriod, string> = {
   latest: 'LATEST',
@@ -103,6 +108,24 @@ const formatLatency = (value: number | null) => {
   return `${Math.round(value)}ms`;
 };
 
+const deriveYDomain = (series: ModelSeries[]) => {
+  const values = series.flatMap((item) => item.points.map((point) => point.score));
+  if (values.length === 0) return [0, 100] as [number, number];
+
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const padding = Math.max(4, Math.round((max - min) * 0.25));
+  const lo = Math.max(0, Math.floor(min - padding));
+  const hi = Math.min(100, Math.ceil(max + padding));
+
+  if (hi - lo < 12) {
+    const mid = (hi + lo) / 2;
+    return [Math.max(0, Math.floor(mid - 8)), Math.min(100, Math.ceil(mid + 8))];
+  }
+
+  return [lo, hi];
+};
+
 const periodHistory = (snapshot: any, period: HistoricalPeriod) => {
   const raw = snapshot?.snapshots?.speed?.[period]?.history?.data?.data;
   if (!Array.isArray(raw)) return [];
@@ -135,7 +158,7 @@ const calculateSeries = (snapshots: any[], period: HistoricalPeriod): ModelSerie
       id: String(snapshot?.modelId ?? `model-${index}`),
       name: formatModelName(snapshot),
       vendor: snapshot?.model?.data?.vendor || 'unknown',
-      color: COLORS[index % COLORS.length],
+      color: COLORS[snapshot?.modelId] || ['#00ff41', '#00bfff', '#ff9f1c', '#ff4d8d'][index % 4],
       points,
       current: last,
       average: scores.length ? scores.reduce((sum, score) => sum + score, 0) / scores.length : null,
@@ -200,6 +223,7 @@ export default function SnapshotComparisonClient({ snapshots, period }: Snapshot
   const series = useMemo(() => calculateSeries(snapshots, period), [snapshots, period]);
   const chartData = useMemo(() => buildChartData(series, period), [series, period]);
   const lastIndexes = useMemo(() => findLastIndexes(chartData, series), [chartData, series]);
+  const yDomain = useMemo(() => deriveYDomain(series), [series]);
   const winner = getWinner(series);
   const fetchedAt = snapshots[0]?.fetchedAt ? new Date(snapshots[0].fetchedAt).toLocaleString() : 'local snapshot';
 
@@ -277,22 +301,28 @@ export default function SnapshotComparisonClient({ snapshots, period }: Snapshot
                 dataKey="label"
                 interval="preserveStartEnd"
                 minTickGap={28}
-                tick={{ fill: 'rgba(220, 236, 224, 0.72)', fontSize: exportMode ? 14 : 10, fontFamily: 'var(--font-mono)' }}
-                axisLine={{ stroke: 'rgba(192,192,192,0.28)' }}
-                tickLine={false}
+                tickMargin={10}
+                tick={{ fill: 'rgba(220, 236, 224, 0.84)', fontSize: exportMode ? 14 : 11, fontFamily: 'var(--font-mono)', fontWeight: 700 }}
+                axisLine={{ stroke: 'rgba(192,192,192,0.4)', strokeWidth: 2 }}
+                tickLine={{ stroke: 'rgba(192,192,192,0.32)', strokeWidth: 1 }}
               />
               <YAxis
-                domain={[0, 100]}
-                tick={{ fill: 'rgba(220, 236, 224, 0.72)', fontSize: exportMode ? 14 : 10, fontFamily: 'var(--font-mono)' }}
-                axisLine={{ stroke: 'rgba(192,192,192,0.28)' }}
-                tickLine={false}
+                domain={yDomain}
+                allowDataOverflow={false}
+                width={82}
+                tickCount={8}
+                tickMargin={10}
+                tick={{ fill: 'rgba(220, 236, 224, 0.9)', fontSize: exportMode ? 14 : 11, fontFamily: 'var(--font-mono)', fontWeight: 700 }}
+                axisLine={{ stroke: 'rgba(255,255,255,0.72)', strokeWidth: 2 }}
+                tickLine={{ stroke: 'rgba(255,255,255,0.42)', strokeWidth: 1.5 }}
                 label={{
                   value: 'CODING SCORE',
                   angle: -90,
                   position: 'insideLeft',
-                  fill: 'rgba(220, 236, 224, 0.72)',
+                  fill: 'rgba(220, 236, 224, 0.95)',
                   fontSize: exportMode ? 14 : 10,
                   fontFamily: 'var(--font-mono)',
+                  dx: -6,
                 }}
               />
               <Tooltip content={tooltip} />
@@ -316,7 +346,7 @@ export default function SnapshotComparisonClient({ snapshots, period }: Snapshot
                     dataKey={item.id}
                     content={(props: any) => {
                       if (props.index !== lastIndexes[item.id] || typeof props.value !== 'number') return null;
-                      const labelY = props.y - 50 + seriesIndex * 40;
+                      const labelY = props.y - 58 + seriesIndex * 44;
                       const labelX = props.x + 14;
 
                       return (
@@ -327,22 +357,23 @@ export default function SnapshotComparisonClient({ snapshots, period }: Snapshot
                             x2={labelX}
                             y2={labelY + 15}
                             stroke={item.color}
-                            strokeWidth={1.5}
-                            strokeOpacity={0.7}
+                            strokeWidth={2}
+                            strokeOpacity={0.85}
                           />
                           <rect
                             x={labelX}
                             y={labelY}
-                            width={178}
-                            height={30}
+                            width={190}
+                            height={34}
                             rx={2}
                             fill="#020402"
                             stroke={item.color}
-                            strokeOpacity={0.9}
+                            strokeOpacity={1}
+                            strokeWidth={1.5}
                           />
                           <text
                             x={labelX + 10}
-                            y={labelY + 12}
+                            y={labelY + 14}
                             fill={item.color}
                             fontSize={exportMode ? 14 : 11}
                             fontFamily="monospace"
@@ -352,7 +383,7 @@ export default function SnapshotComparisonClient({ snapshots, period }: Snapshot
                           </text>
                           <text
                             x={labelX + 10}
-                            y={labelY + 26}
+                            y={labelY + 28}
                             fill="#dcece0"
                             fontSize={exportMode ? 13 : 10}
                             fontFamily="monospace"
