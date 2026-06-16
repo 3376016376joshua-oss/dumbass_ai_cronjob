@@ -217,6 +217,16 @@ function getWinner(series: ModelSeries[]) {
     .sort((a, b) => (b.average || 0) - (a.average || 0))[0] || null;
 }
 
+function getComparisonTitle(series: ModelSeries[]) {
+  const names = series.map((item) => item.name);
+
+  if (names.length === 4 && names.some((name) => name.toLowerCase().includes('gpt-5.5'))) {
+    return 'GPT-5.5 + Claude Opus 4.6 / 4.7 / 4.8';
+  }
+
+  return names.join(' / ');
+}
+
 export default function SnapshotComparisonClient({ snapshots, period }: SnapshotComparisonClientProps) {
   const searchParams = useSearchParams();
   const exportMode = searchParams.get('capture') === '1';
@@ -225,6 +235,7 @@ export default function SnapshotComparisonClient({ snapshots, period }: Snapshot
   const lastIndexes = useMemo(() => findLastIndexes(chartData, series), [chartData, series]);
   const yDomain = useMemo(() => deriveYDomain(series), [series]);
   const winner = getWinner(series);
+  const comparisonTitle = getComparisonTitle(series);
   const fetchedAt = snapshots[0]?.fetchedAt ? new Date(snapshots[0].fetchedAt).toLocaleString() : 'local snapshot';
 
   const tooltip = ({ active, payload, label }: any) => {
@@ -267,8 +278,8 @@ export default function SnapshotComparisonClient({ snapshots, period }: Snapshot
         <header className="md-comparison-header">
           <div>
             <div className="md-comparison-kicker">CODING DATA OVERLAY</div>
-            <h1>Claude Opus 4.6 / 4.7 / 4.8</h1>
-            <p>All selected coding timelines rendered on one image with distinct colors, endpoint labels, and side-by-side metrics.</p>
+            <h1>{comparisonTitle}</h1>
+            <p>All selected coding timelines rendered on one image with distinct colors, endpoint labels, focused Y-axis scaling, and side-by-side metrics.</p>
           </div>
           <div className="md-comparison-meta">
             <span>MODE: 7-AXIS CODING</span>
@@ -296,7 +307,7 @@ export default function SnapshotComparisonClient({ snapshots, period }: Snapshot
         <div className="md-comparison-chart-wrap">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 26, right: 210, left: 18, bottom: 52 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,255,65,0.1)" vertical={false} />
+              <CartesianGrid strokeDasharray="4 4" stroke="rgba(220,236,224,0.22)" strokeWidth={1.4} vertical={false} />
               <XAxis
                 dataKey="label"
                 interval="preserveStartEnd"

@@ -35,7 +35,7 @@ const repoRoot = path.resolve(scriptDir, '..');
 
 const isComparison = getArg('--compare') != null || process.env.MODEL_CAPTURE_COMPARE === '1';
 const modelId = getArg('--model-id') ?? process.env.MODEL_ID ?? '256';
-const modelIds = getArg('--model-ids') ?? process.env.MODEL_IDS ?? '220,250,268';
+const modelIds = getArg('--model-ids') ?? process.env.MODEL_IDS ?? '256,220,250,268';
 const period = getArg('--period') ?? process.env.MODEL_CAPTURE_PERIOD ?? '7d';
 const baseUrl = (getArg('--base-url') ?? process.env.AISTUPIDLEVEL_CAPTURE_BASE_URL ?? 'http://localhost:3000')
   .replace(/\/$/, '');
@@ -58,7 +58,7 @@ const fullPath = getArg('--full-output')
   ?? path.join(
     outputDir,
     isComparison
-      ? `opus-coding-comparison-full@${deviceScaleFactor}x.png`
+      ? `coding-comparison-full@${deviceScaleFactor}x.png`
       : `model-${modelId}-snapshot@${deviceScaleFactor}x.png`,
   );
 const chartPath = getArg('--chart-output')
@@ -66,7 +66,7 @@ const chartPath = getArg('--chart-output')
   ?? path.join(
     outputDir,
     isComparison
-      ? `opus-coding-comparison@${deviceScaleFactor}x.png`
+      ? `coding-comparison@${deviceScaleFactor}x.png`
       : `model-${modelId}-chart@${deviceScaleFactor}x.png`,
   );
 
