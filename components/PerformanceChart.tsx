@@ -33,6 +33,7 @@ interface PerformanceChartProps {
   yAxisLabel?: string;
   lineColor?: string;
   chartType?: 'hour-analysis' | 'historical';
+  exportMode?: boolean;
 }
 
 export default function PerformanceChart({
@@ -45,8 +46,18 @@ export default function PerformanceChart({
   xAxisInterval = 'preserveStartEnd',
   yAxisLabel = 'SCORE',
   lineColor = '#00ff41',
-  chartType = 'historical'
+  chartType = 'historical',
+  exportMode = false,
 }: PerformanceChartProps) {
+  const tickFontSize = exportMode ? 15 : 11;
+  const axisLabelFontSize = exportMode ? 16 : 12;
+  const lineStrokeWidth = exportMode ? 4 : 2;
+  const dotRadius = exportMode ? 6 : 4;
+  const activeDotRadius = exportMode ? 9 : 6;
+  const chartMargin = exportMode
+    ? { top: 32, right: 52, left: 36, bottom: 96 }
+    : { top: 20, right: 30, left: 20, bottom: 60 };
+  const xAxisHeight = exportMode ? 112 : 80;
   
   // Custom tooltip
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -128,26 +139,26 @@ export default function PerformanceChart({
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart
           data={data}
-          margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+          margin={chartMargin}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 255, 65, 0.1)" />
           <XAxis
             dataKey="name"
             stroke={lineColor}
-            tick={{ fill: lineColor, fontSize: 11 }}
+            tick={{ fill: lineColor, fontSize: tickFontSize, fontWeight: exportMode ? 700 : 400 }}
             angle={xAxisAngle}
             textAnchor="end"
-            height={80}
+            height={xAxisHeight}
             interval={xAxisInterval}
           />
           <YAxis
             stroke={lineColor}
-            tick={{ fill: lineColor, fontSize: 11 }}
+            tick={{ fill: lineColor, fontSize: tickFontSize, fontWeight: exportMode ? 700 : 400 }}
             label={{
               value: yAxisLabel,
               angle: -90,
               position: 'insideLeft',
-              style: { fill: lineColor, fontWeight: 'bold', fontSize: 12 }
+              style: { fill: lineColor, fontWeight: 'bold', fontSize: axisLabelFontSize }
             }}
             domain={[0, 100]}
           />
@@ -172,6 +183,7 @@ export default function PerformanceChart({
                 fill="rgba(0, 255, 65, 0.15)"
                 name="Max Score"
                 connectNulls={true}
+                isAnimationActive={!exportMode}
               />
               <Area
                 type="monotone"
@@ -180,6 +192,7 @@ export default function PerformanceChart({
                 fill="rgba(0, 0, 0, 0.3)"
                 name="Min Score"
                 connectNulls={true}
+                isAnimationActive={!exportMode}
               />
             </>
           )}
@@ -189,11 +202,14 @@ export default function PerformanceChart({
             type="monotone"
             dataKey={chartType === 'hour-analysis' ? 'avg' : 'score'}
             stroke={lineColor}
-            strokeWidth={2}
-            dot={{ fill: lineColor, r: 4 }}
-            activeDot={{ r: 6, stroke: lineColor, strokeWidth: 2, fill: '#000' }}
+            strokeWidth={lineStrokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            dot={{ fill: lineColor, r: dotRadius, strokeWidth: exportMode ? 2 : 0 }}
+            activeDot={{ r: activeDotRadius, stroke: lineColor, strokeWidth: 2, fill: '#000' }}
             name={chartType === 'hour-analysis' ? 'Average Score' : 'Score'}
             connectNulls={true}
+            isAnimationActive={!exportMode}
           />
         </ComposedChart>
       </ResponsiveContainer>

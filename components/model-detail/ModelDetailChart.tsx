@@ -17,6 +17,7 @@ interface ModelDetailChartProps {
   selectedPeriod: HistoricalPeriod;
   selectedScoringMode: ScoringMode;
   onSwitchPeriod: (period: HistoricalPeriod) => void;
+  exportMode?: boolean;
 }
 
 const clamp = (n: number, lo = 0, hi = 100) => Math.min(hi, Math.max(lo, n));
@@ -39,6 +40,7 @@ export default function ModelDetailChart({
   selectedPeriod,
   selectedScoringMode,
   onSwitchPeriod,
+  exportMode = false,
 }: ModelDetailChartProps) {
   // Filter/limit history based on period
   let filteredHistory: HistoryPoint[] = [];
@@ -131,12 +133,13 @@ export default function ModelDetailChart({
       <PerformanceChart
         data={chartData}
         chartType="historical"
-        height={380}
+        height={exportMode ? 560 : 380}
         showLegend={false}
         showMinMax={false}
         xAxisInterval="preserveStartEnd"
         yAxisLabel="SCORE"
         lineColor="#00ff41"
+        exportMode={exportMode}
       />
     </div>
   );
