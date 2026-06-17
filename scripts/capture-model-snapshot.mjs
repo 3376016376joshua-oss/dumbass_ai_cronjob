@@ -33,42 +33,27 @@ function getNumberArg(flag, envName, fallback) {
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, '..');
 
-const isComparison = getArg('--compare') != null || process.env.MODEL_CAPTURE_COMPARE === '1';
-const modelId = getArg('--model-id') ?? process.env.MODEL_ID ?? '256';
 const modelIds = getArg('--model-ids') ?? process.env.MODEL_IDS ?? '256,220,250,268';
 const period = getArg('--period') ?? process.env.MODEL_CAPTURE_PERIOD ?? '7d';
 const baseUrl = (getArg('--base-url') ?? process.env.AISTUPIDLEVEL_CAPTURE_BASE_URL ?? 'http://localhost:3000')
   .replace(/\/$/, '');
-const explicitUrl = getArg('--url') ?? process.env.MODEL_CAPTURE_URL;
-const targetUrl = explicitUrl ?? (
-  isComparison
-    ? `${baseUrl}/snapshot/compare?capture=1&ids=${encodeURIComponent(modelIds)}&period=${encodeURIComponent(period)}`
-    : `${baseUrl}/snapshot/models/${encodeURIComponent(modelId)}?capture=1`
-);
+const targetUrl = getArg('--url')
+  ?? process.env.MODEL_CAPTURE_URL
+  ?? `${baseUrl}/snapshot/compare?capture=1&ids=${encodeURIComponent(modelIds)}&period=${encodeURIComponent(period)}`;
 const outputDir = getArg('--output-dir') ?? process.env.MODEL_CAPTURE_DIR ?? path.join(repoRoot, 'snapshots');
 const viewportWidth = getNumberArg('--viewport-width', 'MODEL_CAPTURE_VIEWPORT_WIDTH', 1920);
 const viewportHeight = getNumberArg('--viewport-height', 'MODEL_CAPTURE_VIEWPORT_HEIGHT', 1080);
 const deviceScaleFactor = getNumberArg('--scale', 'MODEL_CAPTURE_SCALE', 2);
 const chartSelector = getArg('--chart-selector')
   ?? process.env.MODEL_CAPTURE_CHART_SELECTOR
-  ?? (isComparison ? '.md-comparison-panel' : '.md-chart-section');
+  ?? '.md-comparison-panel';
 
 const fullPath = getArg('--full-output')
   ?? process.env.MODEL_CAPTURE_FULL_FILE
-  ?? path.join(
-    outputDir,
-    isComparison
-      ? `coding-comparison-full@${deviceScaleFactor}x.png`
-      : `model-${modelId}-snapshot@${deviceScaleFactor}x.png`,
-  );
+  ?? path.join(outputDir, `coding-comparison-full@${deviceScaleFactor}x.png`);
 const chartPath = getArg('--chart-output')
   ?? process.env.MODEL_CAPTURE_CHART_FILE
-  ?? path.join(
-    outputDir,
-    isComparison
-      ? `coding-comparison@${deviceScaleFactor}x.png`
-      : `model-${modelId}-chart@${deviceScaleFactor}x.png`,
-  );
+  ?? path.join(outputDir, `coding-comparison@${deviceScaleFactor}x.png`);
 
 await mkdir(path.dirname(fullPath), { recursive: true });
 await mkdir(path.dirname(chartPath), { recursive: true });

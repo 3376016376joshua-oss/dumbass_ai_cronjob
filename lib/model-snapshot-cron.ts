@@ -1,9 +1,3 @@
-import {
-  appendLatestScoreSnapshots,
-  getSnapshotStorageBackend,
-  writeModelSnapshot,
-} from './snapshot-storage';
-
 const PERIODS = ['latest', '24h', '7d', '1m'] as const;
 const CODING_MODE = { key: 'speed', label: 'coding', sortBy: '7axis' };
 const DEFAULT_MODEL_IDS = [256, 220, 250, 268];
@@ -33,6 +27,7 @@ function normalizeBaseUrl(raw?: string | null) {
 
 async function requestJson(url: string, userAgent: string) {
   const response = await fetch(url, {
+    cache: 'no-store',
     headers: {
       accept: 'application/json',
       'user-agent': userAgent,
@@ -112,7 +107,10 @@ export async function fetchLatestScoreSnapshots(options: {
     });
   }
 
-  const storage = await appendLatestScoreSnapshots(records);
+  const storage = {
+    backend: 'memory' as const,
+    path: null,
+  };
 
   return {
     ok: true,
@@ -124,6 +122,7 @@ export async function fetchLatestScoreSnapshots(options: {
       displayName: record.displayName,
       score: record.score,
     })),
+    records,
     storage,
   };
 }
@@ -205,7 +204,6 @@ export async function fetchModelDetailSnapshots(options: {
       },
     };
 
-    const storage = await writeModelSnapshot(modelId, snapshot);
     const modelData = modelResponse.data as any;
 
     return {
@@ -213,10 +211,11 @@ export async function fetchModelDetailSnapshots(options: {
       modelId,
       modelName: modelData?.name ?? null,
       displayName: modelData?.displayName ?? null,
-      storage,
+      storage: { backend: 'memory' as const, path: null },
       historyRequests: snapshot.summary.historyRequests,
       historyOk: snapshot.summary.historyOk,
       statsOk: snapshot.summary.statsOk,
+      snapshot,
     };
   }
 
@@ -229,8 +228,9 @@ export async function fetchModelDetailSnapshots(options: {
     ok: true,
     fetchedAt: new Date().toISOString(),
     modelIds,
-    storageBackend: getSnapshotStorageBackend(),
-    models,
+    storageBackend: 'memory' as const,
+    models: models.map(({ snapshot, ...model }) => model),
+    snapshots: models.map((model) => model.snapshot),
   };
 }
 
@@ -242,14 +242,12 @@ export async function fetchModelSnapshots(options: {
   const baseUrl = options.baseUrl ?? process.env.AISTUPIDLEVEL_BASE_URL;
 
   const detail = await fetchModelDetailSnapshots({ modelIds, baseUrl });
-  const latestScore = await fetchLatestScoreSnapshots({ modelIds, baseUrl });
 
   return {
     ok: true,
     fetchedAt: new Date().toISOString(),
     modelIds,
-    storageBackend: getSnapshotStorageBackend(),
+    storageBackend: 'memory' as const,
     detail,
-    latestScore,
   };
 }

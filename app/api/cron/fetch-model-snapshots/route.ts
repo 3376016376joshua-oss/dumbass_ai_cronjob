@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { fetchModelSnapshots, resolveCronModelIds } from '@/lib/model-snapshot-cron';
+import { fetchModelSnapshots } from '@/lib/model-snapshot-cron';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+
+const SNAPSHOT_MODEL_IDS = [256, 220, 250, 268];
 
 function isAuthorized(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
@@ -21,9 +23,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const modelIds = resolveCronModelIds(request.nextUrl.searchParams.get('models'));
     const baseUrl = request.nextUrl.searchParams.get('baseUrl') ?? undefined;
-    const result = await fetchModelSnapshots({ modelIds, baseUrl });
+    const result = await fetchModelSnapshots({ modelIds: SNAPSHOT_MODEL_IDS, baseUrl });
 
     return NextResponse.json(result);
   } catch (error) {
