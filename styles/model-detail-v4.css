@@ -613,6 +613,258 @@
   font-size: 20px;
 }
 
+/* ═══ HOME SUMMARY DASHBOARD ═══ */
+.md-home-page {
+  background:
+    linear-gradient(180deg, rgba(0, 191, 255, 0.06), transparent 18%),
+    linear-gradient(90deg, rgba(255, 176, 0, 0.035), transparent 38%),
+    var(--terminal-black);
+}
+.md-home-panel {
+  max-width: 1680px;
+}
+.md-home-header .md-comparison-meta a {
+  border: 1px solid rgba(0, 191, 255, 0.34);
+  background: rgba(0, 191, 255, 0.06);
+  color: #00bfff;
+  padding: 5px 8px;
+  text-decoration: none;
+}
+.md-home-header .md-comparison-meta a:hover {
+  border-color: #00bfff;
+  color: var(--metal-silver);
+}
+.md-home-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.md-home-kpi {
+  border: 1px solid rgba(192, 192, 192, 0.16);
+  background: rgba(255, 255, 255, 0.025);
+  padding: 12px;
+  min-width: 0;
+}
+.md-home-kpi span {
+  display: block;
+  color: var(--phosphor-dim);
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 0.6px;
+  margin-bottom: 7px;
+}
+.md-home-kpi strong {
+  display: block;
+  color: var(--metal-silver);
+  font-size: 20px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.md-home-kpi em {
+  display: block;
+  color: var(--phosphor-dim);
+  font-size: 10px;
+  font-style: normal;
+  margin-top: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.md-home-model-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.md-home-model-card {
+  border: 1px solid;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012)),
+    rgba(0, 0, 0, 0.46);
+  padding: 12px;
+  min-width: 0;
+}
+.md-home-model-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--phosphor-dim);
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.md-home-model-top em {
+  color: rgba(220, 236, 224, 0.58);
+  font-style: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.md-home-model-card h2 {
+  font-size: 13px;
+  line-height: 1.25;
+  min-height: 34px;
+  margin: 0 0 8px;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+.md-home-model-score {
+  font-size: 38px;
+  font-weight: bold;
+  line-height: 1;
+  text-shadow: 0 0 4px currentColor;
+  margin-bottom: 10px;
+}
+.md-home-model-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.md-home-model-metrics span {
+  border: 1px solid rgba(192, 192, 192, 0.12);
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--phosphor-dim);
+  font-size: 9px;
+  padding: 5px 6px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.md-home-model-metrics strong {
+  color: var(--metal-silver);
+  margin-left: 2px;
+}
+.md-home-chart-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.18fr) minmax(420px, 0.82fr);
+  gap: 14px;
+}
+.md-home-chart {
+  border: 1px solid rgba(192, 192, 192, 0.18);
+  background:
+    linear-gradient(90deg, rgba(220, 236, 224, 0.035) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(220, 236, 224, 0.028) 1px, transparent 1px),
+    rgba(0, 0, 0, 0.48);
+  background-size: 28px 28px;
+  min-width: 0;
+}
+.md-home-chart-wide {
+  grid-row: span 2;
+}
+.md-home-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 12px 10px;
+  border-bottom: 1px solid rgba(192, 192, 192, 0.12);
+}
+.md-home-section-head span {
+  display: block;
+  color: var(--phosphor-dim);
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.md-home-section-head strong {
+  display: block;
+  color: var(--metal-silver);
+  font-size: 14px;
+  line-height: 1.25;
+}
+.md-home-chart-body {
+  height: 300px;
+  padding: 8px 8px 4px;
+}
+.md-home-chart-body-tall {
+  height: 626px;
+}
+.md-home-segment,
+.md-home-metric-tabs {
+  display: flex;
+  border: 1px solid rgba(192, 192, 192, 0.2);
+  background: rgba(0, 0, 0, 0.28);
+}
+.md-home-segment button,
+.md-home-metric-tabs button {
+  border: none;
+  border-right: 1px solid rgba(192, 192, 192, 0.14);
+  background: transparent;
+  color: var(--phosphor-dim);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 0;
+  min-height: 32px;
+  padding: 6px 10px;
+}
+.md-home-segment button:last-child,
+.md-home-metric-tabs button:last-child {
+  border-right: none;
+}
+.md-home-segment button:hover,
+.md-home-metric-tabs button:hover {
+  color: #00bfff;
+}
+.md-home-segment button.active,
+.md-home-metric-tabs button.active {
+  background: var(--phosphor-green);
+  color: var(--terminal-black);
+}
+.md-home-metric-tabs {
+  margin: 10px 12px 0;
+  overflow-x: auto;
+}
+.md-home-metric-tabs button {
+  flex: 1;
+  min-width: 86px;
+}
+.md-home-data-table {
+  border: 1px solid rgba(192, 192, 192, 0.16);
+  background: rgba(255, 255, 255, 0.018);
+  margin-top: 14px;
+  overflow-x: auto;
+}
+.md-home-data-head,
+.md-home-data-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.4fr) repeat(8, minmax(76px, 1fr));
+  gap: 8px;
+  align-items: center;
+  min-width: 930px;
+}
+.md-home-data-head {
+  color: var(--phosphor-green);
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  padding: 9px 10px;
+  border-bottom: 1px solid rgba(192, 192, 192, 0.12);
+}
+.md-home-data-row {
+  color: var(--phosphor-dim);
+  font-size: 10px;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(192, 192, 192, 0.08);
+}
+.md-home-data-row:last-child {
+  border-bottom: none;
+}
+.md-home-data-model {
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ═══ 2-COLUMN GRID: Stats + Pricing ═══ */
 .md-info-grid {
   display: grid;
@@ -974,6 +1226,65 @@
 
   .md-chart-section { padding: 12px 8px; }
 
+  .md-comparison-page { padding: 12px; }
+  .md-comparison-panel { padding: 14px; }
+  .md-comparison-header {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 12px;
+  }
+  .md-comparison-header h1 { font-size: 22px; }
+  .md-comparison-meta {
+    justify-items: stretch;
+    width: 100%;
+  }
+  .md-comparison-meta span,
+  .md-home-header .md-comparison-meta a {
+    width: 100%;
+  }
+  .md-comparison-summary,
+  .md-home-kpi-grid,
+  .md-home-model-grid,
+  .md-home-chart-grid {
+    grid-template-columns: 1fr;
+  }
+  .md-home-chart-wide {
+    grid-row: auto;
+  }
+  .md-home-chart-body,
+  .md-home-chart-body-tall {
+    height: 320px;
+  }
+  .md-home-section-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .md-home-segment,
+  .md-home-metric-tabs {
+    width: 100%;
+  }
+  .md-home-segment button {
+    flex: 1;
+  }
+  .md-home-metric-tabs {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+  .md-home-metric-tabs button {
+    flex: 1 1 33%;
+    min-width: 0;
+  }
+  .md-comparison-footer {
+    grid-template-columns: 1fr;
+  }
+  .md-comparison-table-row {
+    grid-template-columns: minmax(150px, 1fr) repeat(6, minmax(70px, 1fr));
+    min-width: 720px;
+  }
+  .md-comparison-table {
+    overflow-x: auto;
+  }
+
   .md-info-grid { grid-template-columns: 1fr; }
   .md-info-col:first-child { border-right: none; border-bottom: 1px solid rgba(192, 192, 192, 0.06); }
   .md-info-row { font-size: 12px; padding: 5px 0; }
@@ -1003,6 +1314,20 @@
   .md-meter-track { height: 16px; }
 
   .md-chart-section { padding: 8px 4px; min-height: 250px; }
+
+  .md-comparison-page { padding: 8px; }
+  .md-comparison-panel { padding: 10px; }
+  .md-home-kpi strong { font-size: 17px; }
+  .md-home-model-score { font-size: 32px; }
+  .md-home-model-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .md-home-chart-body,
+  .md-home-chart-body-tall {
+    height: 280px;
+  }
+  .md-home-metric-tabs button {
+    min-width: 0;
+    padding: 6px 8px;
+  }
 }
 
 /* Very small phones */

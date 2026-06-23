@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import {
+  FeishuApiError,
+  maybeSendFeishuSnapshotNotification,
+} from '@/lib/feishu-notifier';
 import { fetchModelSnapshots } from '@/lib/model-snapshot-cron';
 
 export const dynamic = 'force-dynamic';
@@ -25,8 +29,23 @@ export async function GET(request: NextRequest) {
   try {
     const baseUrl = request.nextUrl.searchParams.get('baseUrl') ?? undefined;
     const result = await fetchModelSnapshots({ modelIds: SNAPSHOT_MODEL_IDS, baseUrl });
+    let feishu = null;
 
-    return NextResponse.json(result);
+    try {
+      feishu = await maybeSendFeishuSnapshotNotification(result);
+    } catch (error) {
+      console.error('[cron/fetch-model-snapshots] feishu notification failed', error);
+      feishu = {
+        ok: false,
+        error: error instanceof Error ? error.message : String(error),
+        details: error instanceof FeishuApiError ? error.details : undefined,
+      };
+    }
+
+    return NextResponse.json({
+      ...result,
+      feishu,
+    });
   } catch (error) {
     console.error('[cron/fetch-model-snapshots] failed', error);
 
