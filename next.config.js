@@ -2,6 +2,11 @@
 const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['@resvg/resvg-js'],
+    outputFileTracingIncludes: {
+      '/api/cron/fetch-model-snapshots': [
+        './node_modules/dejavu-fonts-ttf/ttf/*.ttf',
+      ],
+    },
   },
   webpack(config, { isServer }) {
     if (isServer) {

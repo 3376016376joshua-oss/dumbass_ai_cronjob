@@ -11,9 +11,8 @@
     "capture:coding-comparison": "node scripts/capture-model-snapshot.mjs --compare"
   },
   "dependencies": {
-    "@fontsource/inter": "^5.2.8",
-    "@fontsource/jetbrains-mono": "^5.2.8",
     "@resvg/resvg-js": "^2.6.2",
+    "dejavu-fonts-ttf": "^2.37.3",
     "next": "^14.0.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
