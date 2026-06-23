@@ -1,7 +1,7 @@
 import { renderSnapshotComparisonPng } from './snapshot-comparison-image';
 
 const DEFAULT_FEISHU_API_BASE_URL = 'https://open.feishu.cn';
-const DEFAULT_COMPARE_URL = 'https://dumbass-ai-cronjob.vercel.app/snapshot/compare?ids=256,220,250,268&period=7d';
+const DEFAULT_SITE_URL = 'https://dumbass-ai-cronjob.vercel.app';
 const DEFAULT_UUID_PREFIX = 'aistupidmeter-snapshot';
 const SUPPORTED_RECEIVE_ID_TYPES = ['open_id', 'user_id', 'union_id', 'email', 'chat_id'] as const;
 
@@ -13,7 +13,7 @@ type FeishuMessageConfig = {
   apiBaseUrl: string;
   receiveId?: string;
   receiveIdType: FeishuReceiveIdType;
-  compareUrl: string;
+  siteUrl: string;
   uuidPrefix: string;
   sendImage: boolean;
 };
@@ -72,6 +72,17 @@ function normalizeBaseUrl(raw?: string) {
   return (raw || DEFAULT_FEISHU_API_BASE_URL).replace(/\/$/, '');
 }
 
+function normalizeSiteUrl(raw?: string) {
+  const value = (raw || DEFAULT_SITE_URL).trim();
+
+  try {
+    const url = new URL(value);
+    return url.origin;
+  } catch {
+    return value.replace(/\/$/, '');
+  }
+}
+
 function parseReceiveIdType(raw?: string): FeishuReceiveIdType {
   const value = raw || 'chat_id';
 
@@ -91,9 +102,12 @@ function getFeishuMessageConfig(): FeishuMessageConfig {
     apiBaseUrl: normalizeBaseUrl(firstEnv(['FEISHU_API_BASE_URL', 'LARK_API_BASE_URL'])),
     receiveId: firstEnv(['FEISHU_MESSAGE_RECEIVE_ID', 'LARK_MESSAGE_RECEIVE_ID']),
     receiveIdType: parseReceiveIdType(firstEnv(['FEISHU_MESSAGE_RECEIVE_ID_TYPE', 'LARK_MESSAGE_RECEIVE_ID_TYPE'])),
-    compareUrl: firstEnv(['FEISHU_SNAPSHOT_COMPARE_URL', 'SNAPSHOT_COMPARE_URL', 'NEXT_PUBLIC_SITE_URL'])
-      ? `${firstEnv(['FEISHU_SNAPSHOT_COMPARE_URL', 'SNAPSHOT_COMPARE_URL', 'NEXT_PUBLIC_SITE_URL'])!.replace(/\/$/, '')}/snapshot/compare?ids=256,220,250,268&period=7d`
-      : DEFAULT_COMPARE_URL,
+    siteUrl: normalizeSiteUrl(firstEnv([
+      'FEISHU_SITE_URL',
+      'FEISHU_SNAPSHOT_COMPARE_URL',
+      'SNAPSHOT_COMPARE_URL',
+      'NEXT_PUBLIC_SITE_URL',
+    ])),
     uuidPrefix: firstEnv(['FEISHU_MESSAGE_UUID_PREFIX', 'LARK_MESSAGE_UUID_PREFIX']) || DEFAULT_UUID_PREFIX,
     sendImage: !isFalsey(sendImage),
   };
@@ -143,6 +157,43 @@ function formatLatency(value: number | null) {
   return `${Math.round(value)}ms`;
 }
 
+function sortByCodingRecommendation(a: ModelSummary, b: ModelSummary) {
+  const currentDelta = (b.current ?? -Infinity) - (a.current ?? -Infinity);
+  if (currentDelta !== 0) return currentDelta;
+
+  const averageDelta = (b.average ?? -Infinity) - (a.average ?? -Infinity);
+  if (averageDelta !== 0) return averageDelta;
+
+  return (a.averageLatency ?? Infinity) - (b.averageLatency ?? Infinity);
+}
+
+function getBestCodingAgent(summaries: ModelSummary[]) {
+  return [...summaries]
+    .filter((item) => typeof item.current === 'number' || typeof item.average === 'number')
+    .sort(sortByCodingRecommendation)[0] || null;
+}
+
+function getDegradedModels(summaries: ModelSummary[]) {
+  const degraded = summaries.filter((item) => {
+    const currentBelowAverage =
+      typeof item.current === 'number'
+      && typeof item.average === 'number'
+      && item.current <= item.average - 8;
+    const sharpDrop = typeof item.delta === 'number' && item.delta <= -10;
+
+    return currentBelowAverage || sharpDrop;
+  });
+
+  if (degraded.length > 0) {
+    return degraded.sort((a, b) => (a.current ?? 101) - (b.current ?? 101));
+  }
+
+  return [...summaries]
+    .filter((item) => typeof item.current === 'number')
+    .sort((a, b) => (a.current ?? 101) - (b.current ?? 101))
+    .slice(0, 1);
+}
+
 function modelName(snapshot: any) {
   const model = snapshot?.model?.data || {};
   return model.displayName || model.name || `model-${snapshot?.modelId || 'unknown'}`;
@@ -183,27 +234,38 @@ function buildModelSummaries(snapshotResult: any) {
 
 function buildMessageText(
   snapshotResult: any,
-  compareUrl: string,
-  options: { includeCompareUrl?: boolean } = {},
+  siteUrl: string,
 ) {
   const summaries: ModelSummary[] = buildModelSummaries(snapshotResult);
   const fetchedAt = snapshotResult?.fetchedAt ? new Date(snapshotResult.fetchedAt) : new Date();
   const best = [...summaries]
     .filter((item): item is ModelSummary & { average: number } => typeof item.average === 'number')
     .sort((a, b) => (b.average || 0) - (a.average || 0))[0];
-  const includeCompareUrl = options.includeCompareUrl !== false;
+  const bestCodingAgent = getBestCodingAgent(summaries);
+  const degradedModels = getDegradedModels(summaries);
 
   const lines = [
-    'AI Stupid Meter coding 对比已更新',
+    'AI Stupid Meter coding 日报',
     `时间: ${fetchedAt.toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}`,
     '周期: 7D / 模式: 7-axis coding',
     '',
+    `今日最佳 Coding Agent: ${bestCodingAgent ? `${bestCodingAgent.name} (current ${formatNumber(bestCodingAgent.current)}, avg ${formatNumber(bestCodingAgent.average, 1)})` : '--'}`,
+    `使用建议: 优先交给 ${bestCodingAgent?.name || '当前最高分模型'} 处理复杂代码改动、跨文件重构、测试修复；低分模型只做窄范围检查或候选方案。`,
+    '',
+    '模型数据:',
     ...summaries.map((item) => (
       `${item.name}: current ${formatNumber(item.current)}, avg ${formatNumber(item.average, 1)}, Δ ${formatNumber(item.delta)}, range ${formatNumber(item.minimum)}-${formatNumber(item.maximum)}, runs ${formatNumber(item.runs)}, success ${formatNumber(item.successRate, 1)}%, latency ${formatLatency(item.averageLatency)}`
     )),
     '',
-    `Best avg: ${best ? `${best.name} (${formatNumber(best.average, 1)})` : '--'}`,
-    includeCompareUrl ? `对比图: ${compareUrl}` : '对比图: 已附图片',
+    `7D best avg: ${best ? `${best.name} (${formatNumber(best.average, 1)})` : '--'}`,
+    '',
+    '降智模型提示词加固:',
+    ...degradedModels.map((item) => (
+      `${item.name}: current ${formatNumber(item.current)}, Δ ${formatNumber(item.delta)}。提示词请加: "先列出相关文件和证据；每一步只做一个小改动；输出失败假设、测试命令、回滚点；不要省略边界条件。"`
+    )),
+    '通用加固: 对低分模型减少开放式要求，多给输入/输出格式、验收标准、禁止事项和最小改动范围。',
+    '',
+    `项目链接: ${siteUrl}`,
   ];
 
   return lines.join('\n');
@@ -370,7 +432,7 @@ async function sendSnapshotImageNotification(config: FeishuMessageConfig, snapsh
     appSecret: config.appSecret!,
     apiBaseUrl: config.apiBaseUrl,
   });
-  const text = buildMessageText(snapshotResult, config.compareUrl, { includeCompareUrl: false });
+  const text = buildMessageText(snapshotResult, config.siteUrl);
   const png = await renderSnapshotComparisonPng(snapshotResult, '7d');
   const imageKey = await uploadFeishuImage(config, token, png);
   const textMessage = await postFeishuMessage(config, token, 'text', { text }, 'text');
@@ -405,6 +467,6 @@ export async function maybeSendFeishuSnapshotNotification(snapshotResult: any) {
     return sendSnapshotImageNotification(config, snapshotResult);
   }
 
-  const text = buildMessageText(snapshotResult, config.compareUrl, { includeCompareUrl: true });
+  const text = buildMessageText(snapshotResult, config.siteUrl);
   return sendTextMessage(config, text);
 }
